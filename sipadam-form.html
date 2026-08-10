@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIPADAM — Form Pendataan &amp; Penilaian Alat Proteksi Kebakaran</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#122444;
+    --navy-deep:#0B1830;
+    --red:#E1372C;
+    --red-dark:#B82A21;
+    --gold:#F2B705;
+    --paper:#F5F6F8;
+    --card:#FFFFFF;
+    --ink:#1B2130;
+    --ink-soft:#5B6270;
+    --ink-faint:#9AA0AC;
+    --line:#E3E5EA;
+    --line-strong:#CBCED6;
+    --ok-bg:#EAF6EC;
+    --ok:#1E7B34;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+  }
+  .topbar{
+    background:linear-gradient(135deg,var(--navy) 0%, var(--navy-deep) 100%);
+    padding:18px 20px;
+    display:flex;align-items:center;gap:14px;
+    border-bottom:3px solid var(--red);
+  }
+  .topbar img{width:60px;height:60px;border-radius:10px;flex-shrink:0;}
+  .topbar .tb-text{color:#fff;}
+  .topbar .tb-title{
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:19px;
+    letter-spacing:.02em;margin:0;line-height:1.1;
+  }
+  .topbar .tb-title span{color:var(--red);}
+  .topbar .tb-sub{font-size:11.5px;color:#B9C2D6;margin:3px 0 0;letter-spacing:.02em;}
+
+  .wrap{max-width:640px;margin:0 auto;padding:28px 18px 90px;}
+
+  .intro{margin-bottom:26px;}
+  .intro h1{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:22px;margin:0 0 6px;color:var(--navy);
+  }
+  .intro p{color:var(--ink-soft);font-size:14px;margin:0;max-width:52ch;}
+
+  .progress{display:flex;gap:6px;margin-bottom:8px;}
+  .seg{flex:1;height:4px;border-radius:3px;background:var(--line);overflow:hidden;}
+  .seg .fill{height:100%;width:0%;background:var(--red);transition:width .3s ease;}
+  .steplabels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-faint);margin-bottom:28px;letter-spacing:.02em;}
+  .steplabels span.active{color:var(--red);font-weight:600;}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:26px 24px 24px;
+  }
+  .section-title{
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;color:var(--navy);
+    margin:0 0 3px;padding-bottom:10px;border-bottom:2px solid var(--line);
+  }
+  .section-desc{font-size:12.5px;color:var(--ink-faint);margin:8px 0 20px;}
+
+  .field{margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  label.flabel{display:block;font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px;}
+  label.flabel .req{color:var(--red);margin-left:2px;}
+
+  input[type=text],input[type=tel],input[type=number],textarea,select{
+    width:100%;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line-strong);border-radius:6px;
+    padding:11px 12px;outline:none;transition:border-color .15s ease,background .15s ease;
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--navy);background:#fff;}
+  textarea{resize:vertical;min-height:70px;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:520px){.grid2{grid-template-columns:1fr;}}
+
+  .unit-input{display:flex;gap:8px;}
+  .unit-input input{flex:1;min-width:0;}
+  .unit-input select{flex:0 0 92px;}
+
+  .radio-row{display:flex;gap:10px;}
+  .radio-opt{
+    flex:1;text-align:center;padding:12px 10px;border:1px solid var(--line-strong);
+    border-radius:6px;font-size:13.5px;cursor:pointer;color:var(--ink-soft);
+    transition:all .15s ease;font-weight:500;
+  }
+  .radio-opt.active{border-color:var(--red);background:#FDEEED;color:var(--red-dark);}
+
+  .check-list{display:flex;flex-direction:column;gap:9px;}
+  .check-item{
+    display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+    border-radius:6px;padding:11px 13px;cursor:pointer;transition:all .15s ease;font-size:13.5px;
+  }
+  .check-item:hover{border-color:var(--line-strong);}
+  .check-item.checked{border-color:var(--navy);background:#EEF1F7;}
+  .check-item input{accent-color:var(--navy);width:16px;height:16px;flex-shrink:0;}
+
+  .detail-block{
+    margin-top:14px;padding:16px;background:var(--paper);border:1px dashed var(--line-strong);border-radius:8px;
+  }
+  .detail-block .db-title{
+    font-family:'Oswald',sans-serif;font-size:13.5px;font-weight:600;color:var(--navy);
+    margin:0 0 12px;display:flex;align-items:center;gap:8px;
+  }
+  .db-title .dot{width:7px;height:7px;border-radius:50%;background:var(--red);}
+  .subfields{display:flex;flex-wrap:wrap;gap:10px;align-items:end;}
+  .subfields > div{flex:1 1 110px;min-width:110px;}
+  .subfields > .rm-wrap{flex:0 0 34px;min-width:34px;}
+  .subfields > div.catatan-wrap{flex:1 1 160px;}
+  @media(max-width:520px){.subfields > div{flex:1 1 45%;}}
+
+  .instance-block{
+    background:var(--paper);border:1px dashed var(--line-strong);border-radius:8px;
+    padding:16px;margin-top:12px;
+  }
+  .instance-block:first-child{margin-top:14px;}
+  .instance-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .instance-head .db-title{margin:0;}
+  .instance-head .remove-row-btn{width:30px;height:30px;font-size:15px;}
+  .sub-detail-block{
+    margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-strong);
+  }
+  .sub-detail-block:first-of-type{border-top:none;padding-top:0;}
+  .subfields label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:5px;}
+  .detail-block + .detail-block{margin-top:10px;}
+
+  .row-item{padding-bottom:12px;margin-bottom:12px;border-bottom:1px dashed var(--line-strong);}
+  .row-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .rm-wrap{display:flex;flex-direction:column;}
+  .rm-wrap label{visibility:hidden;}
+  .remove-row-btn{
+    width:34px;height:34px;border-radius:6px;border:1px solid var(--line-strong);background:#fff;
+    color:var(--ink-faint);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .remove-row-btn:hover{border-color:var(--red);color:var(--red);}
+  .add-row-btn{
+    margin-top:4px;width:100%;padding:9px;border:1px dashed var(--line-strong);border-radius:6px;
+    background:transparent;color:var(--navy);font-size:12.5px;font-weight:500;cursor:pointer;
+  }
+  .add-row-btn:hover{border-color:var(--navy);background:#EEF1F7;}
+
+  .rekom-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .rekom-row:last-child{margin-bottom:0;}
+  .rekom-row input{flex:1;}
+
+  .static-alat-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:520px){.static-alat-fields{grid-template-columns:1fr;}}
+  .static-alat-fields label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:5px;}
+
+  .error-msg{font-size:12px;color:var(--red-dark);margin-top:6px;display:none;}
+  .field.err input,.field.err select,.field.err textarea{border-color:var(--red);}
+  .field.err .error-msg{display:block;}
+  .group-err{font-size:12px;color:var(--red-dark);margin-top:8px;display:none;}
+
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:26px;}
+  button{
+    font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:12px 22px;
+    border-radius:6px;cursor:pointer;border:1px solid var(--line-strong);
+    background:transparent;color:var(--ink);transition:all .15s ease;
+  }
+  button:hover{border-color:var(--navy);}
+  button.primary{background:var(--red);border-color:var(--red);color:#fff;}
+  button.primary:hover{background:var(--red-dark);border-color:var(--red-dark);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  button.ghost{border-color:transparent;color:var(--ink-soft);padding:12px 8px;}
+
+  .done{text-align:center;padding:10px 0 4px;}
+  .done-mark{
+    width:54px;height:54px;border-radius:50%;background:var(--ok-bg);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 18px;
+  }
+  .done-mark svg{width:24px;height:24px;stroke:var(--ok);}
+  .done h2{font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;margin:0 0 8px;color:var(--navy);}
+  .done p{color:var(--ink-soft);font-size:14px;margin:0 0 24px;}
+
+  .fail{text-align:center;padding:10px 0 4px;}
+  .fail p{color:var(--red-dark);font-size:13.5px;background:#FDEEED;border:1px solid #F3C9C4;border-radius:8px;padding:14px;text-align:left;}
+
+  .config-warn{
+    background:#FFF6E0;border:1px solid #F2B705;color:#7A5B00;font-size:12.5px;
+    padding:10px 14px;border-radius:6px;margin-bottom:20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="data:image/jpeg;base64,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" alt="Logo SIPADAM">
+  <div class="tb-text">
+    <p class="tb-title">SIPA<span>DAM</span></p>
+    <p class="tb-sub">Pendataan &amp; Penilaian Alat Pemadam Kebakaran — Damkar Buleleng</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Form pendataan sarana proteksi kebakaran</h1>
+    <p>Isi data instansi/usaha Anda secara lengkap dan sesuai kondisi lapangan.</p>
+  </div>
+
+  <div id="configWarn" class="config-warn" style="display:none;">
+    Endpoint penyimpanan data belum diatur. Buka file ini dan isi <code>ENDPOINT_URL</code> pada bagian CONFIG di script setelah Apps Script di-deploy.
+  </div>
+
+  <div class="progress" id="progressBar"></div>
+  <div class="steplabels" id="stepLabels"></div>
+
+  <div class="card">
+
+    <!-- STEP 1 -->
+    <div class="step" data-step="1">
+      <p class="section-title">1.1 Data instansi / usaha</p>
+      <p class="section-desc">Halaman 1 dari formulir SIPADAM.</p>
+
+      <div class="field" id="f-nama">
+        <label class="flabel">Nama instansi / usaha<span class="req">*</span> <span style="font-weight:400;color:var(--ink-faint);">(otomatis huruf kapital)</span></label>
+        <input type="text" id="in-nama" placeholder="cth. HOTEL BAHAGIA SEJAHTERA" autocomplete="off">
+        <p class="error-msg">Nama instansi / usaha wajib diisi.</p>
+      </div>
+
+      <div class="field" id="f-hp">
+        <label class="flabel">Nomor HP<span class="req">*</span></label>
+        <input type="tel" id="in-hp" placeholder="cth. 081234567890">
+        <p class="error-msg">Nomor HP wajib diisi.</p>
+      </div>
+
+      <div class="grid2">
+        <div class="field" id="f-kec">
+          <label class="flabel">Lokasi (kecamatan)<span class="req">*</span></label>
+          <select id="in-kec">
+            <option value="">Pilih kecamatan</option>
+            <option>Tejakula</option>
+            <option>Kubutambahan</option>
+            <option>Sawan</option>
+            <option>Buleleng</option>
+            <option>Sukasada</option>
+            <option>Banjar</option>
+            <option>Seririt</option>
+            <option>Busungbiu</option>
+            <option>Gerokgak</option>
+          </select>
+          <p class="error-msg">Pilih salah satu kecamatan.</p>
+        </div>
+        <div class="field" id="f-desa">
+          <label class="flabel">Desa / kelurahan<span class="req">*</span></label>
+          <input type="text" id="in-desa" placeholder="cth. Kampung Kajanan">
+          <p class="error-msg">Desa / kelurahan wajib diisi.</p>
+        </div>
+      </div>
+
+      <div class="field" id="f-alamat">
+        <label class="flabel">Alamat<span class="req">*</span></label>
+        <textarea id="in-alamat" placeholder="Alamat lengkap lokasi"></textarea>
+        <p class="error-msg">Alamat wajib diisi.</p>
+      </div>
+
+      <div class="field" id="f-jenis">
+        <label class="flabel">Jenis gedung<span class="req">*</span></label>
+        <select id="in-jenis">
+          <option value="">Pilih jenis gedung</option>
+          <option>Sekolah/Kampus/Universitas/LPK</option>
+          <option>Kantor</option>
+          <option>Hotel</option>
+          <option>Villa</option>
+          <option>Fasilitas Kesehatan</option>
+          <option>SARPRAS DAMKAR BULELENG</option>
+          <option>Restoran/cafe</option>
+          <option>Pasar</option>
+          <option>Bengkel</option>
+          <option>Toko dan sejenisnya</option>
+          <option>Obyek Wisata</option>
+        </select>
+        <p class="error-msg">Pilih salah satu jenis gedung.</p>
+      </div>
+
+      <div class="grid2">
+        <div class="field" id="f-luas">
+          <label class="flabel">Luas gedung / bangunan<span class="req">*</span></label>
+          <div class="unit-input">
+            <input type="number" min="0" id="in-luas" placeholder="cth. 350">
+            <select id="in-luas-satuan">
+              <option value="m2">m²</option>
+              <option value="are">Are</option>
+              <option value="hektar">Hektar</option>
+            </select>
+          </div>
+          <p class="error-msg">Luas gedung wajib diisi.</p>
+        </div>
+        <div class="field" id="f-staff">
+          <label class="flabel">Jumlah staff / karyawan (orang)<span class="req">*</span></label>
+          <input type="number" min="0" id="in-staff" placeholder="cth. 12">
+          <p class="error-msg">Jumlah staff wajib diisi.</p>
+        </div>
+      </div>
+
+      <div class="field" id="f-alat">
+        <label class="flabel">Memiliki alat proteksi kebakaran?<span class="req">*</span></label>
+        <div class="radio-row" id="alatToggle">
+          <div class="radio-opt" data-v="Ya">Ya</div>
+          <div class="radio-opt" data-v="Tidak">Tidak</div>
+        </div>
+        <p class="error-msg" id="alatErr">Pilih salah satu.</p>
+      </div>
+
+      <div class="field rekom-field" id="f-rekom-alat" style="display:none;">
+        <label class="flabel">Rekomendasi<span class="req">*</span></label>
+        <div class="rekom-rows" id="rekomAlatRows"></div>
+        <button type="button" class="add-row-btn" data-rekom-target="rekomAlatRows">+ Tambah rekomendasi</button>
+        <p class="group-err" id="rekomAlatErr">Isi minimal satu rekomendasi.</p>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" data-step="2" style="display:none;">
+      <p class="section-title">2.1 Data alat pemadam kebakaran</p>
+      <p class="section-desc">Halaman 2 dari formulir SIPADAM.</p>
+
+      <div class="field">
+        <label class="flabel">Jenis alat pemadam kebakaran yang dimiliki <span style="font-weight:400;color:var(--ink-faint);">(boleh lebih dari satu, opsional)</span></label>
+        <div class="check-list" id="alatList"></div>
+      </div>
+
+      <div id="dynamicDetails"></div>
+
+      <div class="field">
+        <label class="flabel">Jenis alat penyelamatan yang dimiliki <span style="font-weight:400;color:var(--ink-faint);">(boleh lebih dari satu, opsional)</span></label>
+        <div class="check-list" id="penyelamatanList"></div>
+      </div>
+
+      <div id="penyelamatanDetails"></div>
+
+      <div class="field" id="f-status">
+        <label class="flabel">Status instansi / usaha<span class="req">*</span></label>
+        <div class="radio-row" id="statusToggle">
+          <div class="radio-opt" data-v="Layak">Layak</div>
+          <div class="radio-opt" data-v="Tidak Layak">Tidak Layak</div>
+        </div>
+        <p class="error-msg" id="statusErr">Pilih salah satu status.</p>
+      </div>
+
+      <div class="field rekom-field" id="f-rekom-status" style="display:none;">
+        <label class="flabel">Rekomendasi<span class="req">*</span></label>
+        <div class="rekom-rows" id="rekomStatusRows"></div>
+        <button type="button" class="add-row-btn" data-rekom-target="rekomStatusRows">+ Tambah rekomendasi</button>
+        <p class="group-err" id="rekomStatusErr">Isi minimal satu rekomendasi.</p>
+      </div>
+    </div>
+
+    <!-- SUBMITTING -->
+    <div class="done" id="loadingScreen" style="display:none;">
+      <p style="color:var(--ink-soft);font-size:14px;">Mengirim data…</p>
+    </div>
+
+    <!-- DONE -->
+    <div class="done" id="doneScreen" style="display:none;">
+      <div class="done-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h2>Data berhasil dikirim</h2>
+      <p>Terima kasih. Data instansi/usaha Anda telah tercatat dalam sistem SIPADAM Damkar Buleleng.</p>
+      <button class="primary" onclick="location.reload()">Isi data baru</button>
+    </div>
+
+    <!-- FAIL -->
+    <div class="fail" id="failScreen" style="display:none;">
+      <p id="failMsg">Terjadi kesalahan saat mengirim data. Periksa koneksi internet Anda dan coba lagi.</p>
+      <div class="nav">
+        <span></span>
+        <button class="primary" onclick="retrySubmit()">Coba lagi</button>
+      </div>
+    </div>
+
+    <div class="nav" id="navBar">
+      <button class="ghost" id="btnBack" onclick="prevStep()">Kembali</button>
+      <button class="primary" id="btnNext" onclick="nextStep()">Lanjut</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbyDOcJxrKxG93shktv7HWbJ4XAB2GUarITaeFu617OOYuHLNOGKV7vK-2ms9iYnl-WNlQ/exec'; // <-- tempel URL Web App Apps Script (diakhiri /exec) di sini
+/* ==================================================== */
+
+if(!ENDPOINT_URL){ document.getElementById('configWarn').style.display='block'; }
+
+const ALAT_OPTIONS = ['APAR','HYDRANT','SMOKE DETECTOR','HEAT DETECTOR','SPRINKLER','FIRE ALARM','GROUND TANK / PENAMPUNG AIR SEJENIS','FIRE BLANKET'];
+const APAR_TYPES = ['POWDER','CO2','FOAM','WATER'];
+const SPECIAL_ALAT = ['APAR','HYDRANT','GROUND TANK / PENAMPUNG AIR SEJENIS'];
+const GENERIC_ALAT = ALAT_OPTIONS.filter(a=>!SPECIAL_ALAT.includes(a));
+const RESCUE_OPTIONS = ['Tandu (Stretcher)','Bidai','Mitela','SCBA (Tabung Oksigen)','Jalur Evakuasi (Titik Kumpul)'];
+const HYDRANT_PARTS = ['Selang','Nozzle','Kunci'];
+
+const alatList = document.getElementById('alatList');
+ALAT_OPTIONS.forEach(a=>{
+  const item = document.createElement('label');
+  item.className='check-item';
+  item.innerHTML = `<input type="checkbox" value="${a}"><span>${a}</span>`;
+  item.querySelector('input').addEventListener('change', e=>{
+    item.classList.toggle('checked', e.target.checked);
+    renderDynamicDetails();
+  });
+  alatList.appendChild(item);
+});
+
+const penyelamatanList = document.getElementById('penyelamatanList');
+RESCUE_OPTIONS.forEach(a=>{
+  const item = document.createElement('label');
+  item.className='check-item';
+  item.innerHTML = `<input type="checkbox" value="${a}"><span>${a}</span>`;
+  item.querySelector('input').addEventListener('change', e=>{
+    item.classList.toggle('checked', e.target.checked);
+    renderPenyelamatanDetails();
+  });
+  penyelamatanList.appendChild(item);
+});
+
+function selectedAlat(){
+  return Array.from(document.querySelectorAll('#alatList input:checked')).map(el=>el.value);
+}
+function selectedPenyelamatan(){
+  return Array.from(document.querySelectorAll('#penyelamatanList input:checked')).map(el=>el.value);
+}
+
+function renderGenericAlatBlocks(names, areaEl){
+  areaEl.innerHTML='';
+  names.forEach(name=>{
+    const db = document.createElement('div');
+    db.className='detail-block';
+    db.dataset.alat = name;
+    db.innerHTML = `<p class="db-title"><span class="dot"></span>${name}</p>
+      <div class="alat-rows"></div>`;
+    areaEl.appendChild(db);
+    addAlatRow(db.querySelector('.alat-rows'));
+  });
+}
+
+function renderPenyelamatanDetails(){
+  const container = document.getElementById('penyelamatanDetails');
+  const sel = selectedPenyelamatan();
+  container.innerHTML='';
+  if(!sel.length) return;
+  const block = document.createElement('div');
+  block.className='field';
+  block.innerHTML = `<label class="flabel">Kondisi &amp; jumlah alat penyelamatan<span class="req">*</span></label>
+    <div id="penyelamatanDetailArea"></div>`;
+  container.appendChild(block);
+  renderGenericAlatBlocks(sel, block.querySelector('#penyelamatanDetailArea'));
+}
+
+function renderDynamicDetails(){
+  const container = document.getElementById('dynamicDetails');
+  const sel = selectedAlat();
+  container.innerHTML='';
+
+  if(sel.includes('APAR')){
+    const block = document.createElement('div');
+    block.className='field';
+    block.innerHTML = `<label class="flabel">Jenis APAR<span class="req">*</span> <span style="font-weight:400;color:var(--ink-faint);">(boleh lebih dari satu)</span></label>
+      <div class="check-list" id="aparTypeList"></div>
+      <div id="aparDetailArea"></div>`;
+    container.appendChild(block);
+
+    const list = block.querySelector('#aparTypeList');
+    APAR_TYPES.forEach(t=>{
+      const item = document.createElement('label');
+      item.className='check-item';
+      item.innerHTML = `<input type="checkbox" value="${t}" data-apar="1"><span>${t}</span>`;
+      item.querySelector('input').addEventListener('change', e=>{
+        item.classList.toggle('checked', e.target.checked);
+        renderAparDetail();
+      });
+      list.appendChild(item);
+    });
+  }
+
+  if(sel.includes('HYDRANT')){
+    const block = document.createElement('div');
+    block.className='field';
+    block.innerHTML = `<label class="flabel">Kelengkapan HYDRANT<span class="req">*</span></label>
+      <div id="hydrantArea"></div>
+      <button type="button" class="add-row-btn" id="addHydrantBtn">+ Tambah HYDRANT</button>`;
+    container.appendChild(block);
+    document.getElementById('addHydrantBtn').addEventListener('click', ()=> addHydrantInstance());
+    addHydrantInstance();
+  }
+
+  if(sel.includes('GROUND TANK / PENAMPUNG AIR SEJENIS')){
+    const block = document.createElement('div');
+    block.className='field';
+    block.innerHTML = `<label class="flabel">Data GROUND TANK / penampung air sejenis<span class="req">*</span></label>
+      <div id="groundTankArea"></div>
+      <button type="button" class="add-row-btn" id="addGroundTankBtn">+ Tambah ground tank</button>`;
+    container.appendChild(block);
+    document.getElementById('addGroundTankBtn').addEventListener('click', ()=> addGroundTankInstance());
+    addGroundTankInstance();
+  }
+
+  const genericSel = sel.filter(a=>GENERIC_ALAT.includes(a));
+  if(genericSel.length){
+    const block = document.createElement('div');
+    block.className='field';
+    block.innerHTML = `<label class="flabel">Kondisi &amp; jumlah alat<span class="req">*</span></label>
+      <div id="otherDetailArea"></div>`;
+    container.appendChild(block);
+    renderGenericAlatBlocks(genericSel, block.querySelector('#otherDetailArea'));
+  }
+}
+
+function makeRemoveBtn(rowsContainer, rowClass){
+  rowClass = rowClass || '.row-item';
+  const wrap = document.createElement('div');
+  wrap.className='rm-wrap';
+  wrap.innerHTML = `<label>&nbsp;</label>`;
+  const btn = document.createElement('button');
+  btn.type='button';
+  btn.className='remove-row-btn';
+  btn.innerHTML='&times;';
+  btn.addEventListener('click', ()=>{
+    if(rowsContainer.children.length<=1) return;
+    btn.closest(rowClass).remove();
+  });
+  wrap.appendChild(btn);
+  return wrap;
+}
+
+function addAparRow(rowsContainer){
+  const row = document.createElement('div');
+  row.className='row-item';
+  row.innerHTML = `
+    <div class="subfields">
+      <div>
+        <label>Ukuran APAR</label>
+        <input type="text" class="apar-ukuran" placeholder="cth. 3 kg">
+      </div>
+      <div>
+        <label>Kondisi</label>
+        <select class="apar-kondisi">
+          <option value="">Pilih kondisi</option>
+          <option>Baik</option>
+          <option>Kadaluarsa</option>
+          <option>Tidak Baik</option>
+        </select>
+      </div>
+      <div>
+        <label>Jumlah</label>
+        <input type="number" min="0" class="apar-jumlah" placeholder="0">
+      </div>
+      <div class="catatan-wrap" style="display:none;">
+        <label>Catatan</label>
+        <input type="text" class="apar-catatan" placeholder="Catatan (opsional)">
+      </div>
+    </div>`;
+  const kondisiSelect = row.querySelector('.apar-kondisi');
+  const catatanWrap = row.querySelector('.catatan-wrap');
+  kondisiSelect.addEventListener('change', ()=>{
+    catatanWrap.style.display = kondisiSelect.value === 'Baik' ? 'block' : 'none';
+  });
+  row.querySelector('.subfields').appendChild(makeRemoveBtn(rowsContainer));
+  rowsContainer.appendChild(row);
+}
+
+function addAlatRow(rowsContainer){
+  const row = document.createElement('div');
+  row.className='row-item';
+  row.innerHTML = `
+    <div class="static-alat-fields">
+      <div>
+        <label>Jumlah kondisi baik</label>
+        <input type="number" min="0" class="cond-baik" placeholder="0">
+      </div>
+      <div>
+        <label>Jumlah kondisi tidak baik</label>
+        <input type="number" min="0" class="cond-tidakbaik" placeholder="0">
+      </div>
+    </div>`;
+  rowsContainer.appendChild(row);
+}
+
+/* ---------- HYDRANT ---------- */
+function addHydrantInstance(){
+  const area = document.getElementById('hydrantArea');
+  if(!area) return;
+  const idx = area.children.length + 1;
+  const inst = document.createElement('div');
+  inst.className='instance-block';
+  inst.innerHTML = `
+    <div class="instance-head">
+      <p class="db-title"><span class="dot"></span><span class="hydrant-label">HYDRANT #${idx}</span></p>
+    </div>
+    <div class="check-list" id="">
+      ${HYDRANT_PARTS.map(p=>`<label class="check-item"><input type="checkbox" class="hydrant-part" value="${p}"><span>${p}</span></label>`).join('')}
+    </div>
+    <div class="hydrant-sub-fields"></div>`;
+  area.appendChild(inst);
+
+  const headWrap = inst.querySelector('.instance-head');
+  const rm = makeRemoveBtn(area, '.instance-block');
+  rm.querySelector('button').addEventListener('click', ()=> renumberHydrant());
+  headWrap.appendChild(rm.querySelector('button'));
+
+  inst.querySelectorAll('.hydrant-part').forEach(cb=>{
+    const label = cb.closest('.check-item');
+    cb.addEventListener('change', e=>{
+      label.classList.toggle('checked', e.target.checked);
+      renderHydrantSubFields(inst);
+    });
+  });
+}
+
+function renumberHydrant(){
+  const area = document.getElementById('hydrantArea');
+  if(!area) return;
+  Array.from(area.children).forEach((inst,i)=>{
+    inst.querySelector('.hydrant-label').textContent = 'HYDRANT #'+(i+1);
+  });
+}
+
+function renderHydrantSubFields(inst){
+  const wrap = inst.querySelector('.hydrant-sub-fields');
+  const checked = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
+  wrap.innerHTML='';
+
+  if(checked.includes('Selang')){
+    const d = document.createElement('div');
+    d.className='sub-detail-block';
+    d.dataset.part='Selang';
+    d.innerHTML = `<div class="subfields">
+      <div><label>Ukuran (panjang)</label><input type="text" class="selang-ukuran" placeholder="cth. 30 meter"></div>
+      <div><label>Kondisi</label>
+        <select class="selang-kondisi">
+          <option value="">Pilih kondisi</option>
+          <option>Baik</option>
+          <option>Tidak Baik</option>
+        </select>
+      </div>
+    </div>`;
+    wrap.appendChild(d);
+  }
+  if(checked.includes('Nozzle')){
+    const d = document.createElement('div');
+    d.className='sub-detail-block';
+    d.dataset.part='Nozzle';
+    d.innerHTML = `<p style="font-size:12.5px;font-weight:500;color:var(--ink-soft);margin:0 0 8px;">Nozzle</p>
+    <div class="static-alat-fields">
+      <div><label>Jumlah kondisi baik</label><input type="number" min="0" class="nozzle-baik" placeholder="0"></div>
+      <div><label>Jumlah kondisi tidak baik</label><input type="number" min="0" class="nozzle-tidakbaik" placeholder="0"></div>
+    </div>`;
+    wrap.appendChild(d);
+  }
+  if(checked.includes('Kunci')){
+    const d = document.createElement('div');
+    d.className='sub-detail-block';
+    d.dataset.part='Kunci';
+    d.innerHTML = `<p style="font-size:12.5px;font-weight:500;color:var(--ink-soft);margin:0 0 8px;">Kunci</p>
+    <div class="static-alat-fields">
+      <div><label>Jumlah kondisi baik</label><input type="number" min="0" class="kunci-baik" placeholder="0"></div>
+      <div><label>Jumlah kondisi tidak baik</label><input type="number" min="0" class="kunci-tidakbaik" placeholder="0"></div>
+    </div>`;
+    wrap.appendChild(d);
+  }
+}
+
+/* ---------- GROUND TANK ---------- */
+function addGroundTankInstance(){
+  const area = document.getElementById('groundTankArea');
+  if(!area) return;
+  const idx = area.children.length + 1;
+  const inst = document.createElement('div');
+  inst.className='instance-block';
+  inst.innerHTML = `
+    <div class="instance-head">
+      <p class="db-title"><span class="dot"></span><span class="gt-label">Ground Tank #${idx}</span></p>
+    </div>
+    <div class="subfields">
+      <div><label>Jenis mesin</label><input type="text" class="gt-jenis" placeholder="cth. Pompa Honda GX160"></div>
+      <div><label>Volume</label><input type="number" min="0" class="gt-volume" placeholder="0"></div>
+      <div><label>Satuan</label>
+        <select class="gt-satuan">
+          <option value="m3">m³</option>
+          <option value="liter">Liter</option>
+        </select>
+      </div>
+    </div>`;
+  area.appendChild(inst);
+  const headWrap = inst.querySelector('.instance-head');
+  const rm = makeRemoveBtn(area, '.instance-block');
+  rm.querySelector('button').addEventListener('click', ()=> renumberGroundTank());
+  headWrap.appendChild(rm.querySelector('button'));
+}
+
+function renumberGroundTank(){
+  const area = document.getElementById('groundTankArea');
+  if(!area) return;
+  Array.from(area.children).forEach((inst,i)=>{
+    inst.querySelector('.gt-label').textContent = 'Ground Tank #'+(i+1);
+  });
+}
+
+document.getElementById('dynamicDetails').addEventListener('click', e=>{
+  const btn = e.target.closest('.add-row-btn');
+  if(!btn) return;
+  const db = btn.closest('.detail-block');
+  if(!db) return;
+  if(btn.dataset.kind==='apar'){
+    addAparRow(db.querySelector('.apar-rows'));
+  }
+});
+
+function renderAparDetail(){
+  const area = document.getElementById('aparDetailArea');
+  if(!area) return;
+  area.innerHTML='';
+  const checked = Array.from(document.querySelectorAll('#aparTypeList input:checked')).map(el=>el.value);
+  checked.forEach(type=>{
+    const db = document.createElement('div');
+    db.className='detail-block';
+    db.dataset.apar = type;
+    db.innerHTML = `<p class="db-title"><span class="dot"></span>APAR — ${type}</p>
+      <div class="apar-rows"></div>
+      <button type="button" class="add-row-btn" data-kind="apar" data-type="${type}">+ Tambah data ukuran/kondisi lain</button>`;
+    area.appendChild(db);
+    addAparRow(db.querySelector('.apar-rows'));
+  });
+}
+
+function addRekomRow(container){
+  const row = document.createElement('div');
+  row.className='rekom-row';
+  const input = document.createElement('input');
+  input.type='text';
+  input.className='rekom-input';
+  input.placeholder='Tulis rekomendasi…';
+  row.appendChild(input);
+  const btn = document.createElement('button');
+  btn.type='button';
+  btn.className='remove-row-btn';
+  btn.innerHTML='&times;';
+  btn.addEventListener('click', ()=>{
+    if(container.children.length<=1) return;
+    row.remove();
+  });
+  row.appendChild(btn);
+  container.appendChild(row);
+}
+
+function toggleRekomField(fieldId, rowsId, show){
+  const field = document.getElementById(fieldId);
+  const rows = document.getElementById(rowsId);
+  field.style.display = show ? 'block' : 'none';
+  if(show && rows.children.length===0){
+    addRekomRow(rows);
+  }
+  if(!show){
+    rows.innerHTML='';
+    field.classList.remove('err');
+    document.getElementById(rowsId==='rekomAlatRows' ? 'rekomAlatErr' : 'rekomStatusErr').style.display='none';
+  }
+}
+
+document.querySelectorAll('.add-row-btn[data-rekom-target]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    addRekomRow(document.getElementById(btn.dataset.rekomTarget));
+  });
+});
+
+function collectRekom(rowsId){
+  return Array.from(document.querySelectorAll('#'+rowsId+' .rekom-input'))
+    .map(el=>el.value.trim())
+    .filter(v=>v!=='');
+}
+
+document.getElementById('alatToggle').addEventListener('click', e=>{
+  const opt = e.target.closest('.radio-opt');
+  if(!opt) return;
+  document.querySelectorAll('#alatToggle .radio-opt').forEach(o=>o.classList.remove('active'));
+  opt.classList.add('active');
+  document.getElementById('f-alat').classList.remove('err');
+  toggleRekomField('f-rekom-alat','rekomAlatRows', opt.dataset.v==='Tidak');
+  updateTotalSteps();
+});
+document.getElementById('statusToggle').addEventListener('click', e=>{
+  const opt = e.target.closest('.radio-opt');
+  if(!opt) return;
+  document.querySelectorAll('#statusToggle .radio-opt').forEach(o=>o.classList.remove('active'));
+  opt.classList.add('active');
+  document.getElementById('f-status').classList.remove('err');
+  toggleRekomField('f-rekom-status','rekomStatusRows', opt.dataset.v==='Tidak Layak');
+});
+
+document.getElementById('in-nama').addEventListener('input', e=>{
+  const pos = e.target.selectionStart;
+  e.target.value = e.target.value.toUpperCase();
+  e.target.setSelectionRange(pos,pos);
+});
+
+let current = 1;
+let hasStep2 = true;
+
+function updateTotalSteps(){
+  const active = document.querySelector('#alatToggle .radio-opt.active');
+  hasStep2 = !active || active.dataset.v === 'Ya';
+}
+
+function renderProgressLabels(){
+  const bar = document.getElementById('progressBar');
+  const labels = document.getElementById('stepLabels');
+  bar.innerHTML=''; labels.innerHTML='';
+  const steps = hasStep2 ? ['Data instansi','Alat pemadam'] : ['Data instansi'];
+  steps.forEach((s,i)=>{
+    const seg = document.createElement('div');
+    seg.className='seg';
+    seg.innerHTML = `<div class="fill" style="width:${(i+1)<=current?'100':'0'}%"></div>`;
+    bar.appendChild(seg);
+    const sp = document.createElement('span');
+    sp.textContent = s;
+    if(i+1===current) sp.classList.add('active');
+    labels.appendChild(sp);
+  });
+}
+
+function fieldRequired(inputEl, wrapId){
+  const wrap = document.getElementById(wrapId);
+  if(!inputEl.value || !inputEl.value.toString().trim()){
+    wrap.classList.add('err'); return false;
+  }
+  wrap.classList.remove('err'); return true;
+}
+
+function validateStep1(){
+  let ok = true;
+  ok = fieldRequired(document.getElementById('in-nama'),'f-nama') && ok;
+  ok = fieldRequired(document.getElementById('in-hp'),'f-hp') && ok;
+  ok = fieldRequired(document.getElementById('in-kec'),'f-kec') && ok;
+  ok = fieldRequired(document.getElementById('in-desa'),'f-desa') && ok;
+  ok = fieldRequired(document.getElementById('in-alamat'),'f-alamat') && ok;
+  ok = fieldRequired(document.getElementById('in-jenis'),'f-jenis') && ok;
+  ok = fieldRequired(document.getElementById('in-luas'),'f-luas') && ok;
+  ok = fieldRequired(document.getElementById('in-staff'),'f-staff') && ok;
+  const alatActive = document.querySelector('#alatToggle .radio-opt.active');
+  if(!alatActive){ document.getElementById('alatErr').style.display='block'; ok=false; }
+  else{ document.getElementById('alatErr').style.display='none'; }
+  if(alatActive && alatActive.dataset.v==='Tidak'){
+    const rekom = collectRekom('rekomAlatRows');
+    if(rekom.length===0){ document.getElementById('rekomAlatErr').style.display='block'; ok=false; }
+    else{ document.getElementById('rekomAlatErr').style.display='none'; }
+  }
+  return ok;
+}
+
+function validateGenericAlatArea(containerId){
+  let ok = true;
+  const area = document.getElementById(containerId);
+  if(!area) return true;
+  area.querySelectorAll('.detail-block').forEach(db=>{
+    let blockOk = true;
+    db.querySelectorAll('.alat-rows .row-item').forEach(row=>{
+      const baik = row.querySelector('.cond-baik').value;
+      const tidakBaik = row.querySelector('.cond-tidakbaik').value;
+      if(baik==='' && tidakBaik===''){ blockOk = false; }
+    });
+    db.style.borderColor = blockOk ? 'var(--line-strong)' : 'var(--red)';
+    if(!blockOk) ok=false;
+  });
+  return ok;
+}
+
+function validateHydrant(){
+  const area = document.getElementById('hydrantArea');
+  if(!area) return true;
+  let ok = true;
+  area.querySelectorAll('.instance-block').forEach(inst=>{
+    const checked = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
+    let instOk = checked.length > 0;
+    if(checked.includes('Selang')){
+      const d = inst.querySelector('.sub-detail-block[data-part="Selang"]');
+      if(d){
+        const ukuran = d.querySelector('.selang-ukuran').value.trim();
+        const kondisi = d.querySelector('.selang-kondisi').value;
+        if(!ukuran || !kondisi) instOk = false;
+      }
+    }
+    if(checked.includes('Nozzle')){
+      const d = inst.querySelector('.sub-detail-block[data-part="Nozzle"]');
+      if(d){
+        const baik = d.querySelector('.nozzle-baik').value;
+        const tidakBaik = d.querySelector('.nozzle-tidakbaik').value;
+        if(baik==='' && tidakBaik==='') instOk = false;
+      }
+    }
+    if(checked.includes('Kunci')){
+      const d = inst.querySelector('.sub-detail-block[data-part="Kunci"]');
+      if(d){
+        const baik = d.querySelector('.kunci-baik').value;
+        const tidakBaik = d.querySelector('.kunci-tidakbaik').value;
+        if(baik==='' && tidakBaik==='') instOk = false;
+      }
+    }
+    inst.style.borderColor = instOk ? 'var(--line-strong)' : 'var(--red)';
+    if(!instOk) ok=false;
+  });
+  return ok;
+}
+
+function validateGroundTank(){
+  const area = document.getElementById('groundTankArea');
+  if(!area) return true;
+  let ok = true;
+  area.querySelectorAll('.instance-block').forEach(inst=>{
+    const jenis = inst.querySelector('.gt-jenis').value.trim();
+    const volume = inst.querySelector('.gt-volume').value;
+    const instOk = jenis !== '' && volume !== '';
+    inst.style.borderColor = instOk ? 'var(--line-strong)' : 'var(--red)';
+    if(!instOk) ok=false;
+  });
+  return ok;
+}
+
+function validateStep2(){
+  let ok = true;
+  const sel = selectedAlat();
+  if(sel.includes('APAR')){
+    const aparChecked = document.querySelectorAll('#aparTypeList input:checked').length;
+    if(aparChecked===0) ok=false;
+    document.querySelectorAll('#aparDetailArea .detail-block').forEach(db=>{
+      let blockOk = true;
+      db.querySelectorAll('.apar-rows .row-item').forEach(row=>{
+        const kondisi = row.querySelector('.apar-kondisi').value;
+        const jumlah = row.querySelector('.apar-jumlah').value;
+        if(!kondisi || jumlah===''){ blockOk = false; }
+      });
+      db.style.borderColor = blockOk ? 'var(--line-strong)' : 'var(--red)';
+      if(!blockOk) ok=false;
+    });
+  }
+  if(sel.includes('HYDRANT')){
+    if(!validateHydrant()) ok=false;
+  }
+  if(sel.includes('GROUND TANK / PENAMPUNG AIR SEJENIS')){
+    if(!validateGroundTank()) ok=false;
+  }
+  if(!validateGenericAlatArea('otherDetailArea')) ok=false;
+  if(!validateGenericAlatArea('penyelamatanDetailArea')) ok=false;
+
+  const statusActive = document.querySelector('#statusToggle .radio-opt.active');
+  if(!statusActive){ document.getElementById('statusErr').style.display='block'; ok=false; }
+  else { document.getElementById('statusErr').style.display='none'; }
+  if(statusActive && statusActive.dataset.v==='Tidak Layak'){
+    const rekom = collectRekom('rekomStatusRows');
+    if(rekom.length===0){ document.getElementById('rekomStatusErr').style.display='block'; ok=false; }
+    else{ document.getElementById('rekomStatusErr').style.display='none'; }
+  }
+  return ok;
+}
+
+function collectPayload(){
+  const alatActive = document.querySelector('#alatToggle .radio-opt.active');
+  const payload = {
+    namaInstansi: document.getElementById('in-nama').value.trim(),
+    noHp: document.getElementById('in-hp').value.trim(),
+    kecamatan: document.getElementById('in-kec').value,
+    desaKelurahan: document.getElementById('in-desa').value.trim(),
+    alamat: document.getElementById('in-alamat').value.trim(),
+    jenisGedung: document.getElementById('in-jenis').value,
+    luasGedung: document.getElementById('in-luas').value,
+    luasSatuan: document.getElementById('in-luas-satuan').value,
+    jumlahStaff: document.getElementById('in-staff').value,
+    memilikiAlatProteksi: alatActive ? alatActive.dataset.v : '',
+    jenisAlatPemadam: [], detailApar: [], detailAlatLain: [], detailHydrant: [], detailGroundTank: [],
+    jenisAlatPenyelamatan: [], detailPenyelamatan: [],
+    statusInstansi: '', rekomendasi: []
+  };
+
+  if(payload.memilikiAlatProteksi === 'Ya'){
+    payload.jenisAlatPemadam = selectedAlat();
+    document.querySelectorAll('#aparDetailArea .detail-block').forEach(db=>{
+      db.querySelectorAll('.apar-rows .row-item').forEach(row=>{
+        const kondisi = row.querySelector('.apar-kondisi').value;
+        payload.detailApar.push({
+          jenis: db.dataset.apar,
+          ukuran: row.querySelector('.apar-ukuran').value.trim(),
+          kondisi: kondisi,
+          jumlah: row.querySelector('.apar-jumlah').value,
+          catatan: kondisi==='Baik' ? row.querySelector('.apar-catatan').value.trim() : ''
+        });
+      });
+    });
+    document.querySelectorAll('#otherDetailArea .detail-block').forEach(db=>{
+      db.querySelectorAll('.alat-rows .row-item').forEach(row=>{
+        payload.detailAlatLain.push({
+          jenis: db.dataset.alat,
+          jumlahBaik: row.querySelector('.cond-baik').value || 0,
+          jumlahTidakBaik: row.querySelector('.cond-tidakbaik').value || 0
+        });
+      });
+    });
+
+    const hydrantArea = document.getElementById('hydrantArea');
+    if(hydrantArea){
+      hydrantArea.querySelectorAll('.instance-block').forEach(inst=>{
+        const kelengkapan = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
+        const entry = { kelengkapan };
+        const selangD = inst.querySelector('.sub-detail-block[data-part="Selang"]');
+        if(selangD){
+          entry.selang = { ukuran: selangD.querySelector('.selang-ukuran').value.trim(), kondisi: selangD.querySelector('.selang-kondisi').value };
+        }
+        const nozzleD = inst.querySelector('.sub-detail-block[data-part="Nozzle"]');
+        if(nozzleD){
+          entry.nozzle = { jumlahBaik: nozzleD.querySelector('.nozzle-baik').value || 0, jumlahTidakBaik: nozzleD.querySelector('.nozzle-tidakbaik').value || 0 };
+        }
+        const kunciD = inst.querySelector('.sub-detail-block[data-part="Kunci"]');
+        if(kunciD){
+          entry.kunci = { jumlahBaik: kunciD.querySelector('.kunci-baik').value || 0, jumlahTidakBaik: kunciD.querySelector('.kunci-tidakbaik').value || 0 };
+        }
+        payload.detailHydrant.push(entry);
+      });
+    }
+
+    const gtArea = document.getElementById('groundTankArea');
+    if(gtArea){
+      gtArea.querySelectorAll('.instance-block').forEach(inst=>{
+        payload.detailGroundTank.push({
+          jenisMesin: inst.querySelector('.gt-jenis').value.trim(),
+          volume: inst.querySelector('.gt-volume').value,
+          volumeSatuan: inst.querySelector('.gt-satuan').value
+        });
+      });
+    }
+
+    payload.jenisAlatPenyelamatan = selectedPenyelamatan();
+    document.querySelectorAll('#penyelamatanDetailArea .detail-block').forEach(db=>{
+      db.querySelectorAll('.alat-rows .row-item').forEach(row=>{
+        payload.detailPenyelamatan.push({
+          jenis: db.dataset.alat,
+          jumlahBaik: row.querySelector('.cond-baik').value || 0,
+          jumlahTidakBaik: row.querySelector('.cond-tidakbaik').value || 0
+        });
+      });
+    });
+
+    const statusActive = document.querySelector('#statusToggle .radio-opt.active');
+    payload.statusInstansi = statusActive ? statusActive.dataset.v : '';
+    if(payload.statusInstansi === 'Tidak Layak'){
+      payload.rekomendasi = collectRekom('rekomStatusRows');
+    }
+  } else if(payload.memilikiAlatProteksi === 'Tidak'){
+    payload.statusInstansi = 'Tidak Layak';
+    payload.rekomendasi = collectRekom('rekomAlatRows');
+  }
+  return payload;
+}
+
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>{
+    s.style.display = parseInt(s.dataset.step)===n ? 'block':'none';
+  });
+  document.getElementById('btnBack').disabled = n===1;
+  const isLast = (n===1 && !hasStep2) || (n===2 && hasStep2);
+  document.getElementById('btnNext').textContent = isLast ? 'Kirim data' : 'Lanjut';
+  renderProgressLabels();
+}
+
+async function nextStep(){
+  if(current===1){
+    if(!validateStep1()) return;
+    updateTotalSteps();
+    if(!hasStep2){
+      await submitForm();
+      return;
+    }
+    current=2;
+    renderDynamicDetails();
+    showStep(current);
+    return;
+  }
+  if(current===2){
+    if(!validateStep2()) return;
+    await submitForm();
+  }
+}
+
+function prevStep(){
+  if(current===1) return;
+  current=1;
+  showStep(current);
+}
+
+let lastPayload = null;
+
+async function submitForm(){
+  lastPayload = collectPayload();
+  document.getElementById('navBar').style.display='none';
+  document.querySelectorAll('.step').forEach(s=>s.style.display='none');
+  document.getElementById('failScreen').style.display='none';
+  document.getElementById('loadingScreen').style.display='block';
+
+  if(!ENDPOINT_URL){
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('failScreen').style.display='block';
+    document.getElementById('failMsg').textContent='Endpoint belum diatur oleh admin. Data belum bisa dikirim.';
+    return;
+  }
+
+  try{
+    const res = await fetch(ENDPOINT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(lastPayload)
+    });
+    const json = await res.json();
+    document.getElementById('loadingScreen').style.display='none';
+    if(json.ok){
+      document.getElementById('doneScreen').style.display='block';
+    } else {
+      document.getElementById('failScreen').style.display='block';
+      document.getElementById('failMsg').textContent = 'Server menolak data: ' + (json.error || 'kesalahan tidak diketahui.');
+    }
+  } catch(err){
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('failScreen').style.display='block';
+    document.getElementById('failMsg').textContent = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+  }
+}
+
+async function retrySubmit(){
+  document.getElementById('failScreen').style.display='none';
+  document.getElementById('loadingScreen').style.display='block';
+  try{
+    const res = await fetch(ENDPOINT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(lastPayload)
+    });
+    const json = await res.json();
+    document.getElementById('loadingScreen').style.display='none';
+    if(json.ok){ document.getElementById('doneScreen').style.display='block'; }
+    else { document.getElementById('failScreen').style.display='block'; }
+  } catch(err){
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('failScreen').style.display='block';
+  }
+}
+
+updateTotalSteps();
+showStep(current);
+</script>
+</body>
+</html>
