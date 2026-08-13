@@ -362,7 +362,7 @@
 
     <!-- SUBMITTING -->
     <div class="done" id="loadingScreen" style="display:none;">
-      <p style="color:var(--ink-soft);font-size:14px;">Mengirim data…</p>
+      <p style="color:var(--ink-soft);font-size:14px;" id="loadingText">Mengirim data…</p>
     </div>
 
     <!-- DONE -->
@@ -1102,8 +1102,62 @@ function prevStep(){
 
 let lastPayload = null;
 
+function generateSubmissionId(){
+  return 'sb_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,10);
+}
+
+function sleep(ms){ return new Promise(res=>setTimeout(res, ms)); }
+
+async function sendPayloadOnce(payload){
+  const controller = new AbortController();
+  const timeoutId = setTimeout(()=>controller.abort(), 20000);
+  try{
+    const res = await fetch(ENDPOINT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    const json = await res.json();
+    return { networkOk:true, json };
+  } catch(err){
+    clearTimeout(timeoutId);
+    return { networkOk:false, err };
+  }
+}
+
+async function attemptSubmit(payload){
+  const maxAttempts = 3;
+  const loadingText = document.getElementById('loadingText');
+  for(let attempt=1; attempt<=maxAttempts; attempt++){
+    if(loadingText){
+      loadingText.textContent = attempt===1
+        ? 'Mengirim data…'
+        : `Koneksi lambat, mencoba lagi… (percobaan ${attempt} dari ${maxAttempts})`;
+    }
+    const result = await sendPayloadOnce(payload);
+    if(result.networkOk && result.json && result.json.ok){
+      return { success:true };
+    }
+    if(result.networkOk && result.json && !result.json.ok){
+      // Server menolak secara eksplisit (misal error validasi) — jangan diulang otomatis.
+      return { success:false, message: 'Server menolak data: ' + (result.json.error || 'kesalahan tidak diketahui.') };
+    }
+    // Masalah jaringan/timeout — masih ada kesempatan untuk dicoba lagi otomatis.
+    if(attempt < maxAttempts){
+      await sleep(1500 * attempt);
+    }
+  }
+  return {
+    success:false,
+    message:'Koneksi terlalu lambat/terputus setelah beberapa kali percobaan. Data Anda mungkin sebenarnya sudah tersimpan di server — tekan "Coba lagi" (bukan mengisi ulang dari awal) supaya data tidak tercatat dobel.'
+  };
+}
+
 async function submitForm(){
   lastPayload = collectPayload();
+  lastPayload.submissionId = generateSubmissionId();
   document.getElementById('navBar').style.display='none';
   document.querySelectorAll('.step').forEach(s=>s.style.display='none');
   document.getElementById('failScreen').style.display='none';
@@ -1116,43 +1170,30 @@ async function submitForm(){
     return;
   }
 
-  try{
-    const res = await fetch(ENDPOINT_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(lastPayload)
-    });
-    const json = await res.json();
-    document.getElementById('loadingScreen').style.display='none';
-    if(json.ok){
-      document.getElementById('doneScreen').style.display='block';
-    } else {
-      document.getElementById('failScreen').style.display='block';
-      document.getElementById('failMsg').textContent = 'Server menolak data: ' + (json.error || 'kesalahan tidak diketahui.');
-    }
-  } catch(err){
-    document.getElementById('loadingScreen').style.display='none';
+  const result = await attemptSubmit(lastPayload);
+  document.getElementById('loadingScreen').style.display='none';
+  if(result.success){
+    document.getElementById('doneScreen').style.display='block';
+  } else {
     document.getElementById('failScreen').style.display='block';
-    document.getElementById('failMsg').textContent = 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
+    document.getElementById('failMsg').textContent = result.message;
   }
 }
 
 async function retrySubmit(){
+  if(!lastPayload) return;
   document.getElementById('failScreen').style.display='none';
   document.getElementById('loadingScreen').style.display='block';
-  try{
-    const res = await fetch(ENDPOINT_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(lastPayload)
-    });
-    const json = await res.json();
-    document.getElementById('loadingScreen').style.display='none';
-    if(json.ok){ document.getElementById('doneScreen').style.display='block'; }
-    else { document.getElementById('failScreen').style.display='block'; }
-  } catch(err){
-    document.getElementById('loadingScreen').style.display='none';
+  // lastPayload.submissionId TIDAK diganti — jadi kalaupun percobaan sebelumnya
+  // sebenarnya sudah tersimpan di server, server akan mengenali ID yang sama
+  // dan tidak akan mencatatnya dua kali.
+  const result = await attemptSubmit(lastPayload);
+  document.getElementById('loadingScreen').style.display='none';
+  if(result.success){
+    document.getElementById('doneScreen').style.display='block';
+  } else {
     document.getElementById('failScreen').style.display='block';
+    document.getElementById('failMsg').textContent = result.message;
   }
 }
 
