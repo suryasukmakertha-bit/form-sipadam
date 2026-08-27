@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "id.form.sipadam",
+    "sha256_cert_fingerprints": [
+      "90:6C:0E:AC:7C:78:76:EE:BD:C8:87:B2:97:96:98:E1:3C:D5:12:9A:46:4F:F6:AD:10:85:36:8C:E7:53:0C:12"
+    ]
+  }
+}]
