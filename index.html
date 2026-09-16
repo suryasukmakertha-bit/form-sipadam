@@ -94,6 +94,22 @@
   .unit-input input{flex:1;min-width:0;}
   .unit-input select{flex:0 0 92px;}
 
+  .gps-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    padding:12px;border:1px solid var(--navy);border-radius:6px;background:transparent;
+    color:var(--navy);font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+    transition:all .15s ease;
+  }
+  .gps-btn:hover{background:#EEF1F7;}
+  .gps-btn:disabled{opacity:.6;cursor:wait;}
+  .gps-btn.captured{border-color:var(--ok);color:var(--ok);background:var(--ok-bg);}
+  .gps-result{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;
+    font-size:12.5px;color:var(--ok);
+  }
+  .gps-result a{color:var(--navy);font-weight:600;text-decoration:underline;margin-left:auto;}
+  .gps-error{color:var(--red-dark);font-size:12.5px;margin-top:8px;}
+
   .radio-row{display:flex;gap:10px;}
   .radio-opt{
     flex:1;text-align:center;padding:12px 10px;border:1px solid var(--line-strong);
@@ -269,6 +285,20 @@
         <label class="flabel">Alamat<span class="req">*</span></label>
         <textarea id="in-alamat" placeholder="Alamat lengkap lokasi"></textarea>
         <p class="error-msg">Alamat wajib diisi.</p>
+      </div>
+
+      <div class="field">
+        <label class="flabel">Titik lokasi (GPS) <span style="font-weight:400;color:var(--ink-faint);">(opsional, membantu tampilkan lokasi di peta)</span></label>
+        <button type="button" class="gps-btn" id="gpsBtn" onclick="captureGps()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="6"></circle></svg>
+          <span id="gpsBtnText">Ambil Lokasi Saat Ini</span>
+        </button>
+        <div id="gpsResult" class="gps-result" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="gpsCoordText"></span>
+          <a id="gpsMapLink" href="#" target="_blank" rel="noopener">Lihat di peta</a>
+        </div>
+        <p class="gps-error" id="gpsError" style="display:none;"></p>
       </div>
 
       <div class="field" id="f-jenis">
@@ -812,6 +842,55 @@ document.getElementById('in-nama').addEventListener('input', e=>{
   e.target.setSelectionRange(pos,pos);
 });
 
+let capturedLat = null;
+let capturedLng = null;
+
+function captureGps(){
+  const btn = document.getElementById('gpsBtn');
+  const btnText = document.getElementById('gpsBtnText');
+  const errEl = document.getElementById('gpsError');
+  const resultEl = document.getElementById('gpsResult');
+
+  errEl.style.display = 'none';
+
+  if(!('geolocation' in navigator)){
+    errEl.textContent = 'HP/browser ini tidak mendukung pengambilan lokasi GPS.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btnText.textContent = 'Mengambil lokasi…';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      capturedLat = pos.coords.latitude;
+      capturedLng = pos.coords.longitude;
+      btn.disabled = false;
+      btn.classList.add('captured');
+      btnText.textContent = 'Ambil Ulang Lokasi';
+      document.getElementById('gpsCoordText').textContent =
+        'Lokasi tersimpan: ' + capturedLat.toFixed(6) + ', ' + capturedLng.toFixed(6);
+      document.getElementById('gpsMapLink').href =
+        'https://www.google.com/maps?q=' + capturedLat + ',' + capturedLng;
+      resultEl.style.display = 'flex';
+    },
+    (err)=>{
+      btn.disabled = false;
+      btnText.textContent = 'Ambil Lokasi Saat Ini';
+      let msg = 'Gagal mengambil lokasi. Pastikan izin lokasi sudah diberikan dan GPS aktif, lalu coba lagi.';
+      if(err.code === err.PERMISSION_DENIED){
+        msg = 'Izin lokasi ditolak. Aktifkan izin lokasi untuk browser ini di pengaturan HP, lalu coba lagi.';
+      } else if(err.code === err.TIMEOUT){
+        msg = 'Pengambilan lokasi terlalu lama. Pastikan sinyal GPS bagus (coba di luar ruangan), lalu coba lagi.';
+      }
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    },
+    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+  );
+}
+
 let current = 1;
 let hasStep2 = true;
 
@@ -979,6 +1058,8 @@ function collectPayload(){
     kecamatan: document.getElementById('in-kec').value,
     desaKelurahan: document.getElementById('in-desa').value.trim(),
     alamat: document.getElementById('in-alamat').value.trim(),
+    latitude: capturedLat !== null ? capturedLat : '',
+    longitude: capturedLng !== null ? capturedLng : '',
     jenisGedung: document.getElementById('in-jenis').value,
     luasGedung: document.getElementById('in-luas').value,
     luasSatuan: document.getElementById('in-luas-satuan').value,
