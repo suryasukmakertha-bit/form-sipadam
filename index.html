@@ -470,46 +470,63 @@ function selectedPenyelamatan(){
   return Array.from(document.querySelectorAll('#penyelamatanList input:checked')).map(el=>el.value);
 }
 
-function renderGenericAlatBlocks(names, areaEl){
-  areaEl.innerHTML='';
+// Sinkronkan blok detail alat (tambah blok baru untuk yang baru dicentang,
+// hapus blok untuk yang di-uncheck) TANPA menyentuh blok yang sudah ada —
+// supaya data yang sudah diisi di blok lain tidak ikut terhapus.
+function syncDetailBlocks(names, areaEl){
   names.forEach(name=>{
-    const db = document.createElement('div');
-    db.className='detail-block';
-    db.dataset.alat = name;
-    db.innerHTML = `<p class="db-title"><span class="dot"></span>${name}</p>
-      <div class="alat-rows"></div>`;
-    areaEl.appendChild(db);
-    addAlatRow(db.querySelector('.alat-rows'));
+    if(!areaEl.querySelector(`.detail-block[data-alat="${CSS.escape(name)}"]`)){
+      const db = document.createElement('div');
+      db.className='detail-block';
+      db.dataset.alat = name;
+      db.innerHTML = `<p class="db-title"><span class="dot"></span>${name}</p>
+        <div class="alat-rows"></div>`;
+      areaEl.appendChild(db);
+      addAlatRow(db.querySelector('.alat-rows'));
+    }
+  });
+  areaEl.querySelectorAll('.detail-block').forEach(db=>{
+    if(!names.includes(db.dataset.alat)) db.remove();
   });
 }
 
 function renderPenyelamatanDetails(){
   const container = document.getElementById('penyelamatanDetails');
   const sel = selectedPenyelamatan();
-  container.innerHTML='';
-  if(!sel.length) return;
-  const block = document.createElement('div');
-  block.className='field';
-  block.innerHTML = `<label class="flabel">Kondisi &amp; jumlah alat penyelamatan<span class="req">*</span></label>
-    <div id="penyelamatanDetailArea"></div>`;
-  container.appendChild(block);
-  renderGenericAlatBlocks(sel, block.querySelector('#penyelamatanDetailArea'));
+  let block = document.getElementById('penyelamatanBlockWrap');
+  if(sel.length && !block){
+    block = document.createElement('div');
+    block.id = 'penyelamatanBlockWrap';
+    block.className='field';
+    block.innerHTML = `<label class="flabel">Kondisi &amp; jumlah alat penyelamatan<span class="req">*</span></label>
+      <div id="penyelamatanDetailArea"></div>`;
+    container.appendChild(block);
+  } else if(!sel.length && block){
+    block.remove();
+    return;
+  }
+  if(block){
+    syncDetailBlocks(sel, block.querySelector('#penyelamatanDetailArea'));
+  }
 }
 
 function renderDynamicDetails(){
   const container = document.getElementById('dynamicDetails');
   const sel = selectedAlat();
-  container.innerHTML='';
 
-  if(sel.includes('APAR')){
-    const block = document.createElement('div');
-    block.className='field';
-    block.innerHTML = `<label class="flabel">Jenis APAR<span class="req">*</span> <span style="font-weight:400;color:var(--ink-faint);">(boleh lebih dari satu)</span></label>
+  // ---- APAR ----
+  const wantApar = sel.includes('APAR');
+  let aparBlock = document.getElementById('aparBlockWrap');
+  if(wantApar && !aparBlock){
+    aparBlock = document.createElement('div');
+    aparBlock.id = 'aparBlockWrap';
+    aparBlock.className='field';
+    aparBlock.innerHTML = `<label class="flabel">Jenis APAR<span class="req">*</span> <span style="font-weight:400;color:var(--ink-faint);">(boleh lebih dari satu)</span></label>
       <div class="check-list" id="aparTypeList"></div>
       <div id="aparDetailArea"></div>`;
-    container.appendChild(block);
+    container.appendChild(aparBlock);
 
-    const list = block.querySelector('#aparTypeList');
+    const list = aparBlock.querySelector('#aparTypeList');
     APAR_TYPES.forEach(t=>{
       const item = document.createElement('label');
       item.className='check-item';
@@ -520,38 +537,60 @@ function renderDynamicDetails(){
       });
       list.appendChild(item);
     });
+  } else if(!wantApar && aparBlock){
+    aparBlock.remove();
   }
 
-  if(sel.includes('HYDRANT')){
-    const block = document.createElement('div');
-    block.className='field';
-    block.innerHTML = `<label class="flabel">Kelengkapan HYDRANT<span class="req">*</span></label>
+  // ---- HYDRANT ----
+  const wantHydrant = sel.includes('HYDRANT');
+  let hydrantBlock = document.getElementById('hydrantBlockWrap');
+  if(wantHydrant && !hydrantBlock){
+    hydrantBlock = document.createElement('div');
+    hydrantBlock.id = 'hydrantBlockWrap';
+    hydrantBlock.className='field';
+    hydrantBlock.innerHTML = `<label class="flabel">Kelengkapan HYDRANT<span class="req">*</span></label>
       <div id="hydrantArea"></div>
       <button type="button" class="add-row-btn" id="addHydrantBtn">+ Tambah HYDRANT</button>`;
-    container.appendChild(block);
+    container.appendChild(hydrantBlock);
     document.getElementById('addHydrantBtn').addEventListener('click', ()=> addHydrantInstance());
     addHydrantInstance();
+  } else if(!wantHydrant && hydrantBlock){
+    hydrantBlock.remove();
   }
 
-  if(sel.includes('GROUND TANK / PENAMPUNG AIR SEJENIS')){
-    const block = document.createElement('div');
-    block.className='field';
-    block.innerHTML = `<label class="flabel">Data GROUND TANK / penampung air sejenis<span class="req">*</span></label>
+  // ---- GROUND TANK ----
+  const wantGT = sel.includes('GROUND TANK / PENAMPUNG AIR SEJENIS');
+  let gtBlock = document.getElementById('groundTankBlockWrap');
+  if(wantGT && !gtBlock){
+    gtBlock = document.createElement('div');
+    gtBlock.id = 'groundTankBlockWrap';
+    gtBlock.className='field';
+    gtBlock.innerHTML = `<label class="flabel">Data GROUND TANK / penampung air sejenis<span class="req">*</span></label>
       <div id="groundTankArea"></div>
       <button type="button" class="add-row-btn" id="addGroundTankBtn">+ Tambah ground tank</button>`;
-    container.appendChild(block);
+    container.appendChild(gtBlock);
     document.getElementById('addGroundTankBtn').addEventListener('click', ()=> addGroundTankInstance());
     addGroundTankInstance();
+  } else if(!wantGT && gtBlock){
+    gtBlock.remove();
   }
 
+  // ---- Alat generik (SMOKE/HEAT DETECTOR, SPRINKLER, FIRE ALARM, FIRE BLANKET) ----
   const genericSel = sel.filter(a=>GENERIC_ALAT.includes(a));
-  if(genericSel.length){
-    const block = document.createElement('div');
-    block.className='field';
-    block.innerHTML = `<label class="flabel">Kondisi &amp; jumlah alat<span class="req">*</span></label>
+  let genericBlock = document.getElementById('genericAlatBlockWrap');
+  if(genericSel.length && !genericBlock){
+    genericBlock = document.createElement('div');
+    genericBlock.id = 'genericAlatBlockWrap';
+    genericBlock.className='field';
+    genericBlock.innerHTML = `<label class="flabel">Kondisi &amp; jumlah alat<span class="req">*</span></label>
       <div id="otherDetailArea"></div>`;
-    container.appendChild(block);
-    renderGenericAlatBlocks(genericSel, block.querySelector('#otherDetailArea'));
+    container.appendChild(genericBlock);
+  } else if(!genericSel.length && genericBlock){
+    genericBlock.remove();
+    genericBlock = null;
+  }
+  if(genericBlock){
+    syncDetailBlocks(genericSel, genericBlock.querySelector('#otherDetailArea'));
   }
 }
 
@@ -667,9 +706,8 @@ function renumberHydrant(){
 function renderHydrantSubFields(inst){
   const wrap = inst.querySelector('.hydrant-sub-fields');
   const checked = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
-  wrap.innerHTML='';
 
-  if(checked.includes('Selang')){
+  if(checked.includes('Selang') && !wrap.querySelector('.sub-detail-block[data-part="Selang"]')){
     const d = document.createElement('div');
     d.className='sub-detail-block';
     d.dataset.part='Selang';
@@ -685,7 +723,7 @@ function renderHydrantSubFields(inst){
     </div>`;
     wrap.appendChild(d);
   }
-  if(checked.includes('Nozzle')){
+  if(checked.includes('Nozzle') && !wrap.querySelector('.sub-detail-block[data-part="Nozzle"]')){
     const d = document.createElement('div');
     d.className='sub-detail-block';
     d.dataset.part='Nozzle';
@@ -696,7 +734,7 @@ function renderHydrantSubFields(inst){
     </div>`;
     wrap.appendChild(d);
   }
-  if(checked.includes('Kunci')){
+  if(checked.includes('Kunci') && !wrap.querySelector('.sub-detail-block[data-part="Kunci"]')){
     const d = document.createElement('div');
     d.className='sub-detail-block';
     d.dataset.part='Kunci';
@@ -707,6 +745,10 @@ function renderHydrantSubFields(inst){
     </div>`;
     wrap.appendChild(d);
   }
+  // Hapus bagian yang di-uncheck (tapi biarkan yang masih dicentang tetap ada isinya)
+  wrap.querySelectorAll('.sub-detail-block').forEach(d=>{
+    if(!checked.includes(d.dataset.part)) d.remove();
+  });
 }
 
 /* ---------- GROUND TANK ---------- */
@@ -758,9 +800,9 @@ document.getElementById('dynamicDetails').addEventListener('click', e=>{
 function renderAparDetail(){
   const area = document.getElementById('aparDetailArea');
   if(!area) return;
-  area.innerHTML='';
   const checked = Array.from(document.querySelectorAll('#aparTypeList input:checked')).map(el=>el.value);
   checked.forEach(type=>{
+    if(area.querySelector(`.detail-block[data-apar="${CSS.escape(type)}"]`)) return;
     const db = document.createElement('div');
     db.className='detail-block';
     db.dataset.apar = type;
@@ -769,6 +811,9 @@ function renderAparDetail(){
       <button type="button" class="add-row-btn" data-kind="apar" data-type="${type}">+ Tambah data ukuran/kondisi lain</button>`;
     area.appendChild(db);
     addAparRow(db.querySelector('.apar-rows'));
+  });
+  area.querySelectorAll('.detail-block').forEach(db=>{
+    if(!checked.includes(db.dataset.apar)) db.remove();
   });
 }
 
