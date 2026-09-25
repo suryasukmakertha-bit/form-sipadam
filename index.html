@@ -437,7 +437,7 @@ const APAR_TYPES = ['POWDER','CO2','FOAM','WATER'];
 const SPECIAL_ALAT = ['APAR','HYDRANT','GROUND TANK / PENAMPUNG AIR SEJENIS'];
 const GENERIC_ALAT = ALAT_OPTIONS.filter(a=>!SPECIAL_ALAT.includes(a));
 const RESCUE_OPTIONS = ['Tandu (Stretcher)','Bidai','Mitela','SCBA (Tabung Oksigen)','Jalur Evakuasi (Titik Kumpul)'];
-const HYDRANT_PARTS = ['Selang','Nozzle','Kunci'];
+const HYDRANT_PARTS = ['Kondisi','Selang','Nozzle','Kunci'];
 
 const alatList = document.getElementById('alatList');
 ALAT_OPTIONS.forEach(a=>{
@@ -707,6 +707,21 @@ function renderHydrantSubFields(inst){
   const wrap = inst.querySelector('.hydrant-sub-fields');
   const checked = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
 
+  if(checked.includes('Kondisi') && !wrap.querySelector('.sub-detail-block[data-part="Kondisi"]')){
+    const d = document.createElement('div');
+    d.className='sub-detail-block';
+    d.dataset.part='Kondisi';
+    d.innerHTML = `<div class="subfields">
+      <div><label>Kondisi</label>
+        <select class="hydrant-kondisi-nilai">
+          <option value="">Pilih kondisi</option>
+          <option>Baik</option>
+          <option>Tidak Baik</option>
+        </select>
+      </div>
+    </div>`;
+    wrap.appendChild(d);
+  }
   if(checked.includes('Selang') && !wrap.querySelector('.sub-detail-block[data-part="Selang"]')){
     const d = document.createElement('div');
     d.className='sub-detail-block';
@@ -1014,6 +1029,13 @@ function validateHydrant(){
   area.querySelectorAll('.instance-block').forEach(inst=>{
     const checked = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
     let instOk = checked.length > 0;
+    if(checked.includes('Kondisi')){
+      const d = inst.querySelector('.sub-detail-block[data-part="Kondisi"]');
+      if(d){
+        const nilai = d.querySelector('.hydrant-kondisi-nilai').value;
+        if(!nilai) instOk = false;
+      }
+    }
     if(checked.includes('Selang')){
       const d = inst.querySelector('.sub-detail-block[data-part="Selang"]');
       if(d){
@@ -1144,6 +1166,10 @@ function collectPayload(){
       hydrantArea.querySelectorAll('.instance-block').forEach(inst=>{
         const kelengkapan = Array.from(inst.querySelectorAll('.hydrant-part:checked')).map(el=>el.value);
         const entry = { kelengkapan };
+        const kondisiD = inst.querySelector('.sub-detail-block[data-part="Kondisi"]');
+        if(kondisiD){
+          entry.kondisi = kondisiD.querySelector('.hydrant-kondisi-nilai').value;
+        }
         const selangD = inst.querySelector('.sub-detail-block[data-part="Selang"]');
         if(selangD){
           entry.selang = { ukuran: selangD.querySelector('.selang-ukuran').value.trim(), kondisi: selangD.querySelector('.selang-kondisi').value };
