@@ -287,8 +287,8 @@
         <p class="error-msg">Alamat wajib diisi.</p>
       </div>
 
-      <div class="field">
-        <label class="flabel">Titik lokasi (GPS) <span style="font-weight:400;color:var(--ink-faint);">(opsional, membantu tampilkan lokasi di peta)</span></label>
+      <div class="field" id="f-gps">
+        <label class="flabel">Titik lokasi (GPS)<span class="req">*</span></label>
         <button type="button" class="gps-btn" id="gpsBtn" onclick="captureGps()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path><circle cx="12" cy="12" r="6"></circle></svg>
           <span id="gpsBtnText">Ambil Lokasi Saat Ini</span>
@@ -299,6 +299,14 @@
           <a id="gpsMapLink" href="#" target="_blank" rel="noopener">Lihat di peta</a>
         </div>
         <p class="gps-error" id="gpsError" style="display:none;"></p>
+        <div id="gpsSkipWrap" style="display:none;margin-top:10px;">
+          <button type="button" class="gps-btn" id="gpsSkipBtn" style="background:transparent;border:1px dashed var(--line-strong);color:var(--ink-soft);" onclick="toggleGpsSkip()">Lewati GPS (isi alasan)</button>
+          <div id="gpsSkipAlasanWrap" style="display:none;margin-top:8px;">
+            <textarea id="in-gpsSkipAlasan" placeholder="Alasan GPS tidak bisa diambil (mis. sinyal lemah di dalam gedung)"></textarea>
+            <p class="error-msg" id="gpsSkipAlasanErr">Alasan wajib diisi kalau melewati GPS.</p>
+          </div>
+        </div>
+        <p class="error-msg" id="gpsRequiredErr">Titik lokasi GPS wajib diambil, atau lewati dengan mengisi alasan.</p>
       </div>
 
       <div class="field" id="f-jenis">
@@ -778,6 +786,13 @@ function addGroundTankInstance(){
       <p class="db-title"><span class="dot"></span><span class="gt-label">Ground Tank #${idx}</span></p>
     </div>
     <div class="subfields">
+      <div><label>Kondisi</label>
+        <select class="gt-kondisi">
+          <option value="">Pilih kondisi</option>
+          <option>Baik</option>
+          <option>Tidak Baik</option>
+        </select>
+      </div>
       <div><label>Jenis mesin</label><input type="text" class="gt-jenis" placeholder="cth. Pompa Honda GX160"></div>
       <div><label>Volume</label><input type="number" min="0" class="gt-volume" placeholder="0"></div>
       <div><label>Satuan</label>
@@ -904,6 +919,13 @@ document.getElementById('in-nama').addEventListener('input', e=>{
 
 let capturedLat = null;
 let capturedLng = null;
+let gpsFailCount = 0;
+let gpsSkipped = false;
+
+function toggleGpsSkip(){
+  const wrap = document.getElementById('gpsSkipAlasanWrap');
+  wrap.style.display = wrap.style.display==='none' ? 'block' : 'none';
+}
 
 function captureGps(){
   const btn = document.getElementById('gpsBtn');
@@ -926,6 +948,9 @@ function captureGps(){
     (pos)=>{
       capturedLat = pos.coords.latitude;
       capturedLng = pos.coords.longitude;
+      gpsFailCount = 0;
+      gpsSkipped = false;
+      document.getElementById('gpsSkipWrap').style.display = 'none';
       btn.disabled = false;
       btn.classList.add('captured');
       btnText.textContent = 'Ambil Ulang Lokasi';
@@ -938,6 +963,7 @@ function captureGps(){
     (err)=>{
       btn.disabled = false;
       btnText.textContent = 'Ambil Lokasi Saat Ini';
+      gpsFailCount++;
       let msg = 'Gagal mengambil lokasi. Pastikan izin lokasi sudah diberikan dan GPS aktif, lalu coba lagi.';
       if(err.code === err.PERMISSION_DENIED){
         msg = 'Izin lokasi ditolak. Aktifkan izin lokasi untuk browser ini di pengaturan HP, lalu coba lagi.';
@@ -946,6 +972,12 @@ function captureGps(){
       }
       errEl.textContent = msg;
       errEl.style.display = 'block';
+      // Setelah beberapa kali gagal, tawarkan jalur lewati GPS (wajib isi
+      // alasan) -- GPS tetap wajib secara default, ini jalan keluar kalau
+      // sinyal memang tidak memungkinkan di lokasi itu.
+      if(gpsFailCount >= 3){
+        document.getElementById('gpsSkipWrap').style.display = 'block';
+      }
     },
     { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
   );
@@ -984,8 +1016,28 @@ function fieldRequired(inputEl, wrapId){
   wrap.classList.remove('err'); return true;
 }
 
+function validateGps(){
+  const hasGps = capturedLat !== null && capturedLng !== null;
+  const skipAlasanEl = document.getElementById('in-gpsSkipAlasan');
+  const gpsField = document.getElementById('f-gps');
+  const skipVisible = document.getElementById('gpsSkipAlasanWrap').style.display !== 'none';
+
+  if(hasGps){
+    gpsField.classList.remove('err');
+    return true;
+  }
+  if(skipVisible && skipAlasanEl && skipAlasanEl.value.trim()){
+    gpsSkipped = true;
+    gpsField.classList.remove('err');
+    return true;
+  }
+  gpsField.classList.add('err');
+  return false;
+}
+
 function validateStep1(){
   let ok = true;
+  ok = validateGps() && ok;
   ok = fieldRequired(document.getElementById('in-nama'),'f-nama') && ok;
   ok = fieldRequired(document.getElementById('in-hp'),'f-hp') && ok;
   ok = fieldRequired(document.getElementById('in-kec'),'f-kec') && ok;
@@ -1071,9 +1123,10 @@ function validateGroundTank(){
   if(!area) return true;
   let ok = true;
   area.querySelectorAll('.instance-block').forEach(inst=>{
+    const kondisi = inst.querySelector('.gt-kondisi').value;
     const jenis = inst.querySelector('.gt-jenis').value.trim();
     const volume = inst.querySelector('.gt-volume').value;
-    const instOk = jenis !== '' && volume !== '';
+    const instOk = kondisi !== '' && jenis !== '' && volume !== '';
     inst.style.borderColor = instOk ? 'var(--line-strong)' : 'var(--red)';
     if(!instOk) ok=false;
   });
@@ -1127,6 +1180,7 @@ function collectPayload(){
     alamat: document.getElementById('in-alamat').value.trim(),
     latitude: capturedLat !== null ? capturedLat : '',
     longitude: capturedLng !== null ? capturedLng : '',
+    gpsSkipAlasan: (capturedLat===null && gpsSkipped) ? document.getElementById('in-gpsSkipAlasan').value.trim() : '',
     jenisGedung: document.getElementById('in-jenis').value,
     luasGedung: document.getElementById('in-luas').value,
     luasSatuan: document.getElementById('in-luas-satuan').value,
@@ -1190,6 +1244,7 @@ function collectPayload(){
     if(gtArea){
       gtArea.querySelectorAll('.instance-block').forEach(inst=>{
         payload.detailGroundTank.push({
+          kondisi: inst.querySelector('.gt-kondisi').value,
           jenisMesin: inst.querySelector('.gt-jenis').value.trim(),
           volume: inst.querySelector('.gt-volume').value,
           volumeSatuan: inst.querySelector('.gt-satuan').value
